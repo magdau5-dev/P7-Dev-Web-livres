@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
+const bookApi = require("./api/bookApi");
+const userApi = require("./api/userApi");
 
 mongoose
     .connect(process.env.DB_URI, {
@@ -28,5 +30,8 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     console.log("Réponse envoyée avec succès !");
 });
+
+app.use("/api/book", bookApi);
+app.use("/api/auth", userApi);
 
 module.exports = app;
