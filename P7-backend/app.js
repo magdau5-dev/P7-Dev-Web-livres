@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
+const path = require("path");
 const app = express();
 const bookApi = require("./api/bookApi");
 const userApi = require("./api/userApi");
@@ -11,11 +13,14 @@ mongoose
         console.error("Connexion à MongoDB échouée !", err.message),
     );
 
+app.use(cors());
+
 // Middleware JSON
 app.use(express.json());
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Routes
-app.use("/api/book", bookApi);
+app.use("/api/books", bookApi);
 app.use("/api/auth", userApi);
 
 module.exports = app;
