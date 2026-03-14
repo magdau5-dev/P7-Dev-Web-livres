@@ -5,32 +5,16 @@ const bookApi = require("./api/bookApi");
 const userApi = require("./api/userApi");
 
 mongoose
-    .connect(process.env.DB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
+    .connect(process.env.DB_URI)
     .then(() => console.log("Connexion à MongoDB réussie !"))
-    .catch(() => console.error("Connexion à MongoDB échouée !"));
+    .catch((err) =>
+        console.error("Connexion à MongoDB échouée !", err.message),
+    );
 
-app.use((req, res, next) => {
-    console.log("Requête reçue !");
-    next();
-});
+// Middleware JSON
+app.use(express.json());
 
-app.use((req, res, next) => {
-    res.status(201);
-    next();
-});
-
-app.use((req, res, next) => {
-    res.json({ message: "Votre requête a bien été reçue !" });
-    next();
-});
-
-app.use((req, res, next) => {
-    console.log("Réponse envoyée avec succès !");
-});
-
+// Routes
 app.use("/api/book", bookApi);
 app.use("/api/auth", userApi);
 
