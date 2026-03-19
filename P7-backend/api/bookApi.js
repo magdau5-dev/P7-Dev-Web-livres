@@ -17,11 +17,11 @@ router.post("/:id/rating", auth, bookController.rateBook);
 // Récupérer toute la liste des livres
 router.get("/", bookController.getAllBooks);
 
-// Récupérer un livre spécifique
-router.get("/:id", bookController.getBookById);
-
 // Récupérer les livres par meilleur rating
 router.get("/bestrating", bookController.getBooksByBestRating);
+
+// Récupérer un livre spécifique
+router.get("/:id", bookController.getBookById);
 
 // Update un livre
 router.put("/:id", auth, uploadImage, compressImage, bookController.updateBook);
