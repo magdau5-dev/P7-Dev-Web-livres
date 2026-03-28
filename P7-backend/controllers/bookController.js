@@ -2,7 +2,7 @@ const Book = require("../models/Book");
 const fs = require("fs");
 
 // Créer un livre
-exports.createBook = (req, res, next) => {
+exports.createBook = (req, res) => {
     const bookData = JSON.parse(req.body.book);
     const ratings = bookData.ratings || [];
     const averageRating =
@@ -23,7 +23,7 @@ exports.createBook = (req, res, next) => {
 };
 
 // Créer un rating pour un livre
-exports.rateBook = (req, res, next) => {
+exports.rateBook = (req, res) => {
     const { userId, rating } = req.body;
     Book.findOne({ _id: req.params.id })
         .then((book) => {
@@ -54,21 +54,21 @@ exports.rateBook = (req, res, next) => {
 };
 
 // Récupérer toute la liste des livres
-exports.getAllBooks = (req, res, next) => {
+exports.getAllBooks = (req, res) => {
     Book.find()
         .then((books) => res.status(200).json(books))
         .catch((error) => res.status(500).json({ error }));
 };
 
 // Récupérer un livre spécifique
-exports.getBookById = (req, res, next) => {
+exports.getBookById = (req, res) => {
     Book.findOne({ _id: req.params.id })
         .then((book) => res.status(200).json(book))
         .catch((error) => res.status(404).json({ error }));
 };
 
 // Récupérer les livres par meilleur rating
-exports.getBooksByBestRating = (req, res, next) => {
+exports.getBooksByBestRating = (req, res) => {
     Book.find()
         .sort({ averageRating: -1 })
         .limit(3)
@@ -77,7 +77,7 @@ exports.getBooksByBestRating = (req, res, next) => {
 };
 
 // Update un livre
-exports.updateBook = (req, res, next) => {
+exports.updateBook = (req, res) => {
     const bookData = req.file
         ? {
               ...JSON.parse(req.body.book),
@@ -116,14 +116,28 @@ exports.deleteBook = (req, res, next) => {
             if (book.userId.toString() !== req.auth.userId) {
                 return res.status(401).json({ message: "Non autorisé" });
             }
-            const filename = book.imageUrl.split("/images/")[1];
-            fs.unlink(`images/${filename}`, () => {
-                Book.deleteOne({ _id: req.params.id })
-                    .then(() =>
-                        res.status(200).json({ message: "Livre supprimé !" }),
-                    )
-                    .catch((error) => res.status(400).json({ error }));
+
+            const compressedFilename = book.imageUrl.split("/images/")[1];
+            const originalFilename = compressedFilename.replace(
+                /\d+_compressed_/,
+                "",
+            );
+
+            fs.unlink(`images/${compressedFilename}`, (err) => {
+                if (err)
+                    console.error("Erreur suppression fichier compressé:", err);
             });
+
+            fs.unlink(`images/${originalFilename}`, (err) => {
+                if (err)
+                    console.error("Erreur suppression fichier original:", err);
+            });
+
+            Book.deleteOne({ _id: req.params.id })
+                .then(() =>
+                    res.status(200).json({ message: "Livre supprimé !" }),
+                )
+                .catch((error) => res.status(400).json({ error }));
         })
         .catch((error) => res.status(500).json({ error }));
 };
